@@ -16,6 +16,15 @@ uv add python-crimes
 Runnable examples live in [examples](examples/README.md): pipes, deferred
 cleanup, structural matching and `typed-errs` variants, plus reusable dispatch.
 
+```text
+python_crimes/
+├── pipe.py       @pipe and value @ function
+├── defer.py      DeferStack, with defer(), @deferred, terminate()
+├── patterns.py   reusable and composable patterns
+├── match.py      bound matching and reusable Dispatch
+└── typed.py      Result and Option patterns backed by typed-errs
+```
+
 ## Pipes
 
 `@pipe` preserves normal calls while allowing the left-to-right form.
@@ -23,11 +32,14 @@ cleanup, structural matching and `typed-errs` variants, plus reusable dispatch.
 ```python
 from python_crimes import pipe
 
+
 @pipe
 def parse(raw: str) -> dict[str, object]: ...
 
+
 @pipe
 def validate(config: dict[str, object]) -> Config: ...
+
 
 config = raw @ parse @ validate
 ```
@@ -43,6 +55,7 @@ just convenient frontends over it.
 ```python
 from python_crimes import deferred, terminate
 from typed_errs import Result, catch_bubble
+
 
 @catch_bubble
 @deferred
@@ -69,14 +82,38 @@ with match_(data) as m:
     m.case(200, 201, 204) << "success"
     m.case(type_(int)).when(gt(0)) << (lambda number: number * 2)
     m.regex(r"(\d+)x(\d+)") << (lambda width, height: (int(width), int(height)))
-    m.case({
-        "type": "user",
-        "payload": {"name": capture(str), "age": capture(int)},
-    }) << (lambda name, age: (name, age))
+    m.case(
+        {
+            "type": "user",
+            "payload": {"name": capture(str), "age": capture(int)},
+        }
+    ) << (lambda name, age: (name, age))
     m.default << "unknown"
 
 result = m.value
 ```
+
+### Fluent matching
+
+The context manager is convenient for a visually large decision tree. For a
+small match inside an expression or function return, use the exact same engine
+without `with`:
+
+```python
+level = (
+    match_(raw_level)
+    .case(type_(int))
+    .when(gt(0))
+    .then(lambda value: value * 2)
+    .regex(r"level:(\d+)")
+    .then(int)
+    .default.then(0)
+    .value
+)
+```
+
+`<<` and `.then(...)` are equivalent. A callable result is a handler; use
+`const(callable_value)` when a callable itself is the wanted result.
 
 Patterns compose with `&`, `|`, and `~`; helpers include `eq`, `type_`, `when`,
 `gt`/`ge`/`lt`/`le`, `in_`, `contains`, `is_`, `regex`, `attr`, `length`, `ANY`,
@@ -100,6 +137,19 @@ with match_(find_user()) as m:
 No optional adapter is needed: `python-crimes` depends on `typed-errs` and
 ships these patterns as part of its public API.
 
+The special arms deliberately unwrap only when their variant matched:
+
+```text
+Ok(value)       -> m.ok       handler(value)
+Err(error)      -> m.err      handler(error)
+Some(value)     -> m.some     handler(value)
+Nothing()       -> m.nothing  constant or handler(subject)
+```
+
+For ordinary structural matching, failed patterns are `Nothing()` and
+successful patterns are `Some(Match(captures))`; this is the same explicit
+absence vocabulary used everywhere else in the ecosystem.
+
 ### Reusable dispatch
 
 ```python
@@ -107,9 +157,12 @@ from python_crimes import ge, matcher, type_
 
 status = (
     matcher()
-    .case(200).then("ok")
-    .case(404).then("missing")
-    .case(type_(int) & ge(500)).then("server error")
+    .case(200)
+    .then("ok")
+    .case(404)
+    .then("missing")
+    .case(type_(int) & ge(500))
+    .then("server error")
     .default.then("unknown")
 )
 

@@ -2,7 +2,7 @@
 
 from enum import Enum, auto
 
-from typed_errs import Err, Ok
+from typed_errs import Err, Nothing, Ok, Some
 
 from python_crimes import capture, ge, gt, match_, type_
 
@@ -22,10 +22,35 @@ with match_(payload) as m:
 
 print(m.value)
 
+# The same engine also works as one expression: no context manager needed.
+level = (
+    match_("level:7")
+    .case(type_(int))
+    .when(gt(0))
+    .then(lambda number: number * 2)
+    .regex(r"level:(\d+)")
+    .then(int)
+    .default.then(0)
+    .value
+)
+print(level)
+
 with match_("1920x1080") as m:
     m.case(type_(int)).when(gt(0)) << (lambda number: number * 2)
     m.regex(r"(\d+)x(\d+)") << (lambda width, height: (int(width), int(height)))
     m.default << "not a size"
+
+print(m.value)
+
+with match_(Some("veya")) as m:
+    m.some << (lambda name: f"known user {name}")
+    m.nothing << "anonymous"
+
+print(m.value)
+
+with match_(Nothing()) as m:
+    m.some << (lambda name: f"known user {name}")
+    m.nothing << "anonymous"
 
 print(m.value)
 
