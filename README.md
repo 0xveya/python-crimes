@@ -11,6 +11,11 @@ results.
 uv add python-crimes
 ```
 
+## Examples
+
+Runnable examples live in [examples](examples/README.md): pipes, deferred
+cleanup, structural matching and `typed-errs` variants, plus reusable dispatch.
+
 ## Pipes
 
 `@pipe` preserves normal calls while allowing the left-to-right form.
