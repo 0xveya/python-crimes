@@ -398,7 +398,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "typed-errs", git = "https://github.com/0xveya/typed-errs" }]
+requires-dist = [{ name = "typed-errs", specifier = ">=0,<1" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -489,8 +489,12 @@ wheels = [
 
 [[package]]
 name = "typed-errs"
-version = "0.0.0"
-source = { git = "https://github.com/0xveya/typed-errs#0769b16ef5980dc142a8f55e9322cffbe603538c" }
+version = "0.0.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b6/51/bc19ad946077f83d497a06c8170b6f469573feda3b6b433b56d30fef83d9/typed_errs-0.0.4.tar.gz", hash = "sha256:fd65ec3f455e1eee2cad51ce4a65b6c9e7920ac4bfab4368e057ac21e6b541fe", size = 9250, upload-time = "2026-08-09T17:26:03.026Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/5b/55391c35daa08c81c4c75ef7e05f863af613bb39eb14fdb31e71cf038495/typed_errs-0.0.4-py3-none-any.whl", hash = "sha256:bf82e35a8a580f48e847c2abe192bdabdcc8146f25e40e404840768827698f72", size = 7654, upload-time = "2026-08-09T17:26:01.999Z" },
+]
 
 [[package]]
 name = "typing-extensions"

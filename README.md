@@ -1,6 +1,7 @@
 # python-crimes
 
 [![PyPI](https://img.shields.io/pypi/v/python-crimes)](https://pypi.org/project/python-crimes/)
+[![CI](https://github.com/0xveya/python-crimes/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/0xveya/python-crimes/actions/workflows/ci.yml)
 
 Small, typed-enough Python syntax crimes that form one deliberately coherent
 ecosystem with [typed-errs](https://github.com/0xveya/typed-errs): pipe values,
