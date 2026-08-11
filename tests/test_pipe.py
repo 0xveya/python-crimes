@@ -22,6 +22,14 @@ def test_pipe_regular_call() -> None:
     assert double(21) == 42
 
 
+def test_pipe_with_binds_later_arguments() -> None:
+    @pipe
+    def clamp(value: int, *, low: int, high: int) -> int:
+        return max(low, min(value, high))
+
+    assert 120 @ clamp.with_(low=0, high=100) == 100
+
+
 def test_pipe_operator() -> None:
     @pipe
     def double(x: int) -> int:
