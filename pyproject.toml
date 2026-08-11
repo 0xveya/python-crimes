@@ -1,0 +1,61 @@
+[project]
+name = "python-crimes"
+version = "0.0.1"
+description = "Small set up utils so i like python more todo:replace me"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Veya Fürst", email = "ghgstefan@gmail.com" }]
+keywords = ["crimes", "defer", "match", "awful-python", "pipes"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Abusing-Python",
+    "Typing :: Typed",
+]
+dependencies = ["typed-errs>=0,<1"]
+
+[tool.uv.sources]
+typed-errs = { git = "https://github.com/0xveya/typed-errs" }
+
+[project.urls]
+PyPI = "https://pypi.org/project/python-crimes/"
+Repository = "https://github.com/0xveya/python-crimes"
+Issues = "https://github.com/0xveya/python-crimes/issues"
+
+[dependency-groups]
+dev = ["basedpyright", "mypy", "pytest", "ruff"]
+
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+sqlite_callback_store = ["py.typed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src"]
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[tool.basedpyright]
+include = ["src", "tests"]
+pythonVersion = "3.10"
+typeCheckingMode = "standard"

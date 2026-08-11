@@ -1,0 +1,28 @@
+[tools]
+python = "3.10"
+uv = "latest"
+
+[tasks.setup]
+run = "uv sync"
+
+[tasks.format]
+run = "uv run ruff format ."
+
+[tasks.lint]
+run = "uv run ruff check ."
+
+[tasks.types]
+run = ["uv run mypy", "uv run basedpyright"]
+
+[tasks.test]
+run = "uv run pytest"
+
+[tasks.build]
+run = "uv build"
+
+[tasks.check]
+depends = ["lint", "types", "test", "build"]
+
+[tasks.publish]
+depends = ["check"]
+run = "uv publish dist/*"
