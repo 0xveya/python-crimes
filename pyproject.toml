@@ -1,7 +1,7 @@
 [project]
 name = "python-crimes"
 version = "0.0.1"
-description = "Small set up utils so i like python more todo:replace me"
+description = "Composable pipes, deferred cleanup, and typed-errs-aware pattern matching"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -10,7 +10,7 @@ keywords = ["crimes", "defer", "match", "awful-python", "pipes"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3 :: Only",
-    "Topic :: Abusing-Python",
+    "Topic :: Software Development :: Libraries",
     "Typing :: Typed",
 ]
 dependencies = ["typed-errs>=0,<1"]
@@ -30,8 +30,12 @@ dev = ["basedpyright", "mypy", "pytest", "ruff"]
 requires = ["setuptools>=80"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+package-dir = { "" = "src" }
+packages = ["python_crimes"]
+
 [tool.setuptools.package-data]
-sqlite_callback_store = ["py.typed"]
+python_crimes = ["py.typed"]
 
 [tool.ruff]
 line-length = 100
