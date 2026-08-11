@@ -15,9 +15,6 @@ classifiers = [
 ]
 dependencies = ["typed-errs>=0,<1"]
 
-[tool.uv.sources]
-typed-errs = { git = "https://github.com/0xveya/typed-errs" }
-
 [project.urls]
 PyPI = "https://pypi.org/project/python-crimes/"
 Repository = "https://github.com/0xveya/python-crimes"
