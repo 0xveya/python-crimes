@@ -12,6 +12,7 @@ from .patterns import ANY, Match, Pattern, in_, pattern, regex
 
 T = TypeVar("T")
 R = TypeVar("R")
+OwnerT = TypeVar("OwnerT", bound="_ArmOwner")
 _MISSING = object()
 
 
@@ -40,27 +41,15 @@ class _RegisteredArm:
 
 
 class _ArmOwner:
-    def _register(self, arm_pattern: Pattern[Any], result: object) -> None: ...
-
-    def case(self, *values: object) -> Arm[Any]:
-        raise NotImplementedError
-
-    @property
-    def default(self) -> DefaultArm:
-        raise NotImplementedError
-
-    def __call__(self, subject: object) -> Any:
-        raise NotImplementedError
-
-    def __rmatmul__(self, subject: object) -> Any:
+    def _register(self, arm_pattern: Pattern[Any], result: object) -> None:
         raise NotImplementedError
 
 
-class Arm(Generic[T]):
-    def __init__(self, owner: _ArmOwner, arm_pattern: Pattern[Any]) -> None:
+class Arm(Generic[T, OwnerT]):
+    def __init__(self, owner: OwnerT, arm_pattern: Pattern[Any]) -> None:
         self._owner, self._pattern = owner, arm_pattern
 
-    def when(self, condition: Pattern[Any] | Callable[[T], bool]) -> Arm[T]:
+    def when(self, condition: Pattern[Any] | Callable[[T], bool]) -> Arm[T, OwnerT]:
         if not isinstance(condition, Pattern):
             from .patterns import when
 
@@ -68,23 +57,23 @@ class Arm(Generic[T]):
         self._pattern = self._pattern & condition
         return self
 
-    def __lshift__(self, result: object) -> _ArmOwner:
+    def __lshift__(self, result: object) -> OwnerT:
         self._owner._register(self._pattern, result)
         return self._owner
 
-    def then(self, result: object) -> _ArmOwner:
+    def then(self, result: object) -> OwnerT:
         return self << result
 
 
-class DefaultArm:
-    def __init__(self, owner: _ArmOwner) -> None:
+class DefaultArm(Generic[OwnerT]):
+    def __init__(self, owner: OwnerT) -> None:
         self._owner = owner
 
-    def __lshift__(self, result: object) -> _ArmOwner:
+    def __lshift__(self, result: object) -> OwnerT:
         self._owner._register(ANY, result)
         return self._owner
 
-    def then(self, result: object) -> _ArmOwner:
+    def then(self, result: object) -> OwnerT:
         return self << result
 
 
@@ -123,7 +112,7 @@ class Matcher(Generic[T], _ArmOwner):
     def _register(self, arm_pattern: Pattern[Any], result: object) -> None:
         self._arms.append(_RegisteredArm(arm_pattern, result))
 
-    def case(self, *values: object) -> Arm[Any]:
+    def case(self, *values: object) -> Arm[Any, Matcher[T]]:
         if not values:
             raise TypeError("case requires at least one pattern")
         combined = pattern(values[0])
@@ -131,41 +120,41 @@ class Matcher(Generic[T], _ArmOwner):
             combined = combined | pattern(value)
         return Arm(self, combined)
 
-    def when(self, condition: Callable[[T], bool]) -> Arm[T]:
+    def when(self, condition: Callable[[T], bool]) -> Arm[T, Matcher[T]]:
         from .patterns import when
 
         return Arm(self, when(condition))
 
-    def regex(self, expression: str) -> Arm[str]:
+    def regex(self, expression: str) -> Arm[str, Matcher[T]]:
         return Arm(self, regex(expression))
 
-    def in_(self, values: Container[object]) -> Arm[Any]:
+    def in_(self, values: Container[object]) -> Arm[Any, Matcher[T]]:
         return Arm(self, in_(values))
 
     @property
-    def default(self) -> DefaultArm:
+    def default(self) -> DefaultArm[Matcher[T]]:
         return DefaultArm(self)
 
     @property
-    def ok(self) -> Arm[Any]:
+    def ok(self) -> Arm[Any, Matcher[T]]:
         from .typed import OK
 
         return Arm(self, OK)
 
     @property
-    def err(self) -> Arm[Any]:
+    def err(self) -> Arm[Any, Matcher[T]]:
         from .typed import ERR
 
         return Arm(self, ERR)
 
     @property
-    def some(self) -> Arm[Any]:
+    def some(self) -> Arm[Any, Matcher[T]]:
         from .typed import SOME
 
         return Arm(self, SOME)
 
     @property
-    def nothing(self) -> Arm[Any]:
+    def nothing(self) -> Arm[Any, Matcher[T]]:
         from .typed import NOTHING
 
         return Arm(self, NOTHING)
@@ -189,7 +178,7 @@ class Dispatch(_ArmOwner):
     def _register(self, arm_pattern: Pattern[Any], result: object) -> None:
         self._arms.append(_RegisteredArm(arm_pattern, result))
 
-    def case(self, *values: object) -> Arm[Any]:
+    def case(self, *values: object) -> Arm[Any, Dispatch]:
         if not values:
             raise TypeError("case requires at least one pattern")
         combined = pattern(values[0])
@@ -197,7 +186,7 @@ class Dispatch(_ArmOwner):
             combined = combined | pattern(value)
         return Arm(self, combined)
 
-    def when(self, condition: Callable[[Any], bool]) -> Arm[Any]:
+    def when(self, condition: Callable[[Any], bool]) -> Arm[Any, Dispatch]:
         from .patterns import when
 
         return Arm(self, when(condition))
@@ -209,7 +198,7 @@ class Dispatch(_ArmOwner):
         return self(subject)
 
     @property
-    def default(self) -> DefaultArm:
+    def default(self) -> DefaultArm[Dispatch]:
         return DefaultArm(self)
 
 
