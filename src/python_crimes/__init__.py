@@ -1,4 +1,5 @@
 from .defer import DeferError, DeferStack, defer, deferred, terminate
+from .fuzzy import StringMatch, closest_string, levenshtein_distance
 from .match import Arm, Constant, Dispatch, Matcher, NonExhaustiveMatch, const, match_, matcher
 from .patterns import (
     ANY,
@@ -34,6 +35,7 @@ __all__ = [
     "Pattern",
     "REST",
     "SOME",
+    "StringMatch",
     "Arm",
     "Constant",
     "DeferError",
@@ -45,6 +47,7 @@ __all__ = [
     "capture",
     "const",
     "contains",
+    "closest_string",
     "defer",
     "deferred",
     "eq",
@@ -54,6 +57,7 @@ __all__ = [
     "is_",
     "le",
     "length",
+    "levenshtein_distance",
     "lt",
     "match_",
     "matcher",
