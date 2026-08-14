@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Container
+from collections.abc import Callable, Container, Iterable
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
 from typed_errs import Nothing
 
-from .patterns import ANY, Match, Pattern, in_, pattern, regex
+from .patterns import ANY, Match, Pattern, fuzzy, in_, pattern, regex
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -128,6 +128,14 @@ class Matcher(Generic[T], _ArmOwner):
     def regex(self, expression: str) -> Arm[str, Matcher[T]]:
         return Arm(self, regex(expression))
 
+    def fuzzy(
+        self,
+        candidates: Iterable[str],
+        maximum_distance: int = 2,
+    ) -> Arm[str, Matcher[T]]:
+        """Match a nearby string and capture its closest candidate."""
+        return Arm(self, fuzzy(candidates, maximum_distance))
+
     def in_(self, values: Container[object]) -> Arm[Any, Matcher[T]]:
         return Arm(self, in_(values))
 
@@ -190,6 +198,14 @@ class Dispatch(_ArmOwner):
         from .patterns import when
 
         return Arm(self, when(condition))
+
+    def fuzzy(
+        self,
+        candidates: Iterable[str],
+        maximum_distance: int = 2,
+    ) -> Arm[str, Dispatch]:
+        """Match a nearby string and capture its closest candidate."""
+        return Arm(self, fuzzy(candidates, maximum_distance))
 
     def __call__(self, subject: object) -> Any:
         return _resolve(subject, self._arms)

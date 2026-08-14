@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Container, Mapping, Sequence
+from collections.abc import Callable, Container, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
 from typed_errs import Nothing, Option, Some
+
+from .fuzzy import closest_string
 
 T = TypeVar("T")
 
@@ -108,6 +110,22 @@ class RegexPattern(Pattern[str]):
             return Nothing()
         result = self.expression.fullmatch(value)
         return Nothing() if result is None else Some(Match(tuple(result.groups())))
+
+
+class FuzzyPattern(Pattern[str]):
+    """Match strings near a candidate and capture the closest candidate."""
+
+    def __init__(self, candidates: Iterable[str], maximum_distance: int) -> None:
+        self.candidates = tuple(candidates)
+        self.maximum_distance = maximum_distance
+
+    def match(self, value: object) -> Option[Match]:
+        if not isinstance(value, str):
+            return Nothing()
+        closest = closest_string(value, self.candidates)
+        if isinstance(closest, Nothing) or closest.value.distance > self.maximum_distance:
+            return Nothing()
+        return Some(Match((closest.value.value,)))
 
 
 class CapturePattern(Pattern[T]):
@@ -289,6 +307,11 @@ def regex(expression: str | re.Pattern[str]) -> Pattern[str]:
     return RegexPattern(expression)
 
 
+def fuzzy(candidates: Iterable[str], maximum_distance: int = 2) -> Pattern[str]:
+    """Match a nearby string and capture its closest candidate."""
+    return FuzzyPattern(candidates, maximum_distance)
+
+
 def attr(name: str, expected: object = ANY) -> Pattern[object]:
     return AttrPattern(name, pattern(expected))
 
@@ -306,6 +329,7 @@ __all__ = [
     "capture",
     "contains",
     "eq",
+    "fuzzy",
     "ge",
     "gt",
     "in_",

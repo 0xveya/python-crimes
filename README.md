@@ -23,7 +23,8 @@ cleanup, structural matching and `typed-errs` variants, plus reusable dispatch.
 python_crimes/
 ├── pipe.py       @pipe and value @ function
 ├── defer.py      DeferStack, with defer(), @deferred, terminate()
-├── patterns.py   reusable and composable patterns
+├── fuzzy.py      Levenshtein distance and closest-string selection
+├── patterns.py   reusable and composable patterns, including fuzzy strings
 ├── match.py      bound matching and reusable Dispatch
 └── typed.py      Result and Option patterns backed by typed-errs
 ```
@@ -120,7 +121,18 @@ level = (
 
 Patterns compose with `&`, `|`, and `~`; helpers include `eq`, `type_`, `when`,
 `gt`/`ge`/`lt`/`le`, `in_`, `contains`, `is_`, `regex`, `attr`, `length`, `ANY`,
-and `REST`. Lists and mappings are structural patterns recursively, and
+`fuzzy`, and `REST`. A fuzzy arm captures the closest candidate when its edit
+distance is within the configured maximum:
+
+```python
+with match_("heigth") as m:
+    m.fuzzy({"width", "height", "time"}, maximum_distance=2) << (
+        lambda candidate: f"did you mean {candidate!r}?"
+    )
+    m.default << "unknown key"
+```
+
+Lists and mappings are structural patterns recursively, and
 `capture(...)` passes values to the selected handler in traversal order.
 
 ### typed-errs is first class

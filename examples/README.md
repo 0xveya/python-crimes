@@ -6,7 +6,7 @@ Run these from the repository root with `uv run python examples/<name>.py`.
 examples/
 ├── pipes.py       @pipe, value @ stage, and .with_()
 ├── deferred.py    DeferStack, with defer(), @deferred, terminate(), and .q
-├── matching.py    with match_(), fluent matching, captures, and typed-errs
+├── matching.py    structural, fuzzy, fluent, captured, and typed-errs matches
 └── dispatch.py    reusable matcher composed using @
 ```
 

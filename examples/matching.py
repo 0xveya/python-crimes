@@ -22,6 +22,14 @@ with match_(payload) as m:
 
 print(m.value)
 
+with match_("heigth") as m:
+    m.fuzzy({"width", "height", "time"}) << (
+        lambda candidate: f"did you mean {candidate!r}?"
+    )
+    m.default << "no close key"
+
+print(m.value)
+
 # The same engine also works as one expression: no context manager needed.
 level = (
     match_("level:7")

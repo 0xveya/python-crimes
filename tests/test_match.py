@@ -13,6 +13,7 @@ from python_crimes import (
     const,
     contains,
     eq,
+    fuzzy,
     ge,
     gt,
     is_,
@@ -103,6 +104,13 @@ def test_regex_attribute_and_length() -> None:
     assert resolve("x", lambda m: m.case(type_(str) & length(gt(0))) << "yes") == "yes"
 
 
+def test_fuzzy_pattern_and_fluent_arm_capture_closest_candidate() -> None:
+    assert resolve("heigth", lambda m: m.case(fuzzy({"width", "height"})) << str) == "height"
+    assert resolve("widht", lambda m: m.fuzzy({"width", "height"}) << str) == "width"
+    with pytest.raises(NonExhaustiveMatch):
+        match_("unrelated").fuzzy({"width", "height"}).then(str).resolve()
+
+
 def test_handler_and_predicate_exceptions_propagate() -> None:
     with pytest.raises(RuntimeError):
         resolve(1, lambda m: m.case(int) << (lambda _: (_ for _ in ()).throw(RuntimeError())))
@@ -149,3 +157,6 @@ def test_reusable_dispatch_and_pipe_composition() -> None:
     )
     assert status(200) == "ok"
     assert 503 @ status == "server"
+
+    keys = matcher().fuzzy({"width", "height"}).then(str).default.then("unknown")
+    assert "heigth" @ keys == "height"
